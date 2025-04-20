@@ -1,12 +1,46 @@
-# React + Vite
+# Sharely
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern, blazing-fast, peer-to-peer file sharing app with a stunning black-gradient UI inspired by Cursor.com. Sharely lets you share files instantly and securely between devices—no accounts, no uploads, just pure encrypted P2P magic.
 
-Currently, two official plugins are available:
+![Sharely Hero](./sharely-hero-screenshot.png)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## ✨ Features
 
-## Expanding the ESLint configuration
+- **Beautiful Black/Gradient UI**: Professional, animated, glassmorphic interface inspired by Cursor.com.
+- **Instant P2P Sharing**: Share files instantly between devices using secure, direct connections.
+- **No Accounts Needed**: No signups, no installs—just open and share.
+- **End-to-End Encryption**: Your files are private and never touch a server.
+- **Mobile Friendly**: Works great on phones, tablets, and desktops.
+- **Open Source**: MIT licensed, hackable, and ready for your next project.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## 🚀 Getting Started
+
+1. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+2. **Run the app:**
+   ```bash
+   npm start
+   ```
+3. **Open in browser:**
+   Visit [http://localhost:3000](http://localhost:3000)
+
+## 📁 Project Structure
+
+- `src/pages/Home.jsx` – Beautiful animated landing page
+- `src/pages/Room.jsx` – Modern room UI for sharing
+- `src/styles/` – All custom CSS for black/gradient theme
+
+## 🖤 Credits
+
+- UI inspired by [Cursor.com](https://cursor.com)
+- Built with React, Socket.io, and lots of love
+
+## 🛡️ License
+
+MIT
+
+---
+
+> Designed and revamped by Cascade AI at your request. Enjoy sharing with Sharely!

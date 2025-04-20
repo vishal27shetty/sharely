@@ -1,4 +1,4 @@
-/* Reset and base styles */
+/* === Sharely Global Black/Gradient Theme === */
 * {
   margin: 0;
   padding: 0;
@@ -6,105 +6,77 @@
 }
 
 :root {
-  --primary-color: #4f46e5;
-  --primary-hover: #4338ca;
-  --text-color: #333;
-  --text-light: #6b7280;
-  --text-dark: #1f2937;
-  --bg-color: #f5f7fa;
-  --bg-light: #fff;
-  --border-color: #e1e4e8;
-  --border-light: #d1d5db;
+  --primary-color: #818cf8;
+  --primary-hover: #6366f1;
+  --accent-color: #06b6d4;
+  --accent2-color: #f472b6;
+  --text-color: #e0e7ef;
+  --text-light: #cbd5e1;
+  --text-dark: #fff;
+  --bg-color: #18181b;
+  --bg-light: #23272f;
+  --border-color: #23272f;
+  --border-light: #818cf830;
   --success-color: #10b981;
   --error-color: #ef4444;
-  --warning-color: #f59e0b;
+  --warning-color: #fbbf24;
 }
 
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: var(--bg-color);
+  font-family: 'Segoe UI', 'Inter', 'Roboto', Arial, sans-serif;
+  background: linear-gradient(120deg, #18181b 0%, #23272f 40%, #1a1a2e 100%);
   color: var(--text-color);
   line-height: 1.6;
-}
-
-/* Button styles */
-.btn {
-  padding: 8px 16px;
-  border-radius: 6px;
-  border: 1px solid var(--border-light);
-  background-color: var(--bg-light);
-  color: var(--text-dark);
-  font-size: 0.9rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  transition: all 0.2s ease;
-}
-
-.btn:hover {
-  background-color: #f9fafb;
-  border-color: #9ca3af;
-}
-
-.btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.btn-primary {
-  background-color: var(--primary-color);
-  color: white;
-  border-color: var(--primary-color);
-}
-
-.btn-primary:hover {
-  background-color: var(--primary-hover);
-  border-color: var(--primary-hover);
-}
-
-.btn-success {
-  background-color: var(--success-color);
-  color: white;
-  border-color: var(--success-color);
-}
-
-/* Logo styles */
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.logo-icon {
-  font-size: 2rem;
-  color: var(--primary-color);
-}
-
-.logo h1 {
-  font-size: 1.8rem;
-  font-weight: 600;
-  color: var(--primary-color);
+  min-height: 100vh;
 }
 
 #root {
-  max-width: 1280px;
+  max-width: 100vw;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 0;
   text-align: center;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
+/* Remove card, logo, and other old styles for clean slate */
+.card, .read-the-docs, .logo.react, .logo {
+  display: none !important;
 }
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
+
+/* Utility classes */
+.btn, .room-nav-btn, .room-copy-btn, .room-new-btn, .sharely-btn {
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 1rem;
+  border: none;
+  padding: 0.7rem 1.6rem;
+  background: linear-gradient(90deg, var(--primary-color) 10%, var(--accent-color) 90%);
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 1.5px 8px #0004;
+  transition: background 0.18s, color 0.18s, transform 0.18s;
+  margin: 0.2rem 0.3rem;
 }
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+.btn:hover, .room-nav-btn:hover, .room-copy-btn:hover, .room-new-btn:hover, .sharely-btn:hover {
+  background: linear-gradient(90deg, var(--accent-color) 10%, var(--primary-color) 90%);
+  color: #fff;
+  transform: scale(1.04);
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  background: #23272f;
+}
+::-webkit-scrollbar-thumb {
+  background: #818cf830;
+  border-radius: 8px;
+}
+
+@media (max-width: 700px) {
+  #root {
+    padding: 0;
+    max-width: 100vw;
+  }
 }
 
 @keyframes logo-spin {
@@ -120,12 +92,4 @@ body {
   a:nth-of-type(2) .logo {
     animation: logo-spin infinite 20s linear;
   }
-}
-
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
 }
