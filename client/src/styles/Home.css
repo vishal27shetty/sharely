@@ -647,6 +647,64 @@ body {
   font-size: 1.25rem;
 }
 
+/* === Join Section Styles === */
+.join-section {
+  margin-top: 24px;
+  display: flex;
+  align-items: center;
+  gap:12px;
+}
+
+.join-input {
+  width: 100px;
+  padding: 10px 12px;
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  background: var(--card-bg);
+  color: var(--text-primary);
+  text-align: center;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color var(--animation-speed) ease;
+}
+
+.join-input:focus {
+  border-color: var(--accent-gradient);
+}
+
+.join-button {
+  padding: 10px 20px;
+  background: var(--accent-gradient);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--animation-speed) ease;
+}
+
+.join-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.join-button:hover:not(:disabled) {
+  background: var(--primary-gradient);
+}
+
+@media (max-width: 700px) {
+  .join-section {
+    flex-direction: column;
+    width: 100%;
+    align-items: stretch;
+  }
+  .join-input,
+  .join-button {
+    width: 100%;
+  }
+}
+
 /* === Footer Styles === */
 .home-footer {
   width: 100vw;

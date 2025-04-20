@@ -11,12 +11,12 @@ import {
   faServer
 } from '@fortawesome/free-solid-svg-icons';
 import '../styles/Home.css';
-import { v4 as uuidv4 } from 'uuid';
 
 const Home = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [showAnimation, setShowAnimation] = useState(false);
+  const [joinCode, setJoinCode] = useState('');
 
   useEffect(() => {
     // Trigger entry animations after component mounts
@@ -29,10 +29,16 @@ const Home = () => {
     setIsLoading(true);
     // Simulate loading
     setTimeout(() => {
-      const roomId = uuidv4();
-      navigate(`/room/${roomId}`);
+      // generate 4-digit room code
+      const code = String(Math.floor(1000 + Math.random() * 9000));
+      navigate(`/room/${code}`);
       setIsLoading(false);
     }, 800);
+  };
+
+  const joinRoom = () => {
+    if (joinCode.length < 4) return;
+    navigate(`/room/${joinCode}`);
   };
 
   return (
@@ -81,6 +87,24 @@ const Home = () => {
                 </>
               )}
             </button>
+            <div className="join-section">
+              <input
+                type="text"
+                value={joinCode}
+                onChange={e => setJoinCode(e.target.value.replace(/\D/g, '').slice(0,4))}
+                className="join-input"
+                placeholder={`Enter code`}
+                style={{ fontSize: '0.90rem' }}
+                maxLength={4}
+              />
+              <button
+                className="join-button"
+                onClick={joinRoom}
+                disabled={joinCode.length < 4}
+              >
+                Join Room
+              </button>
+            </div>
           </div>
           <div className="hero-visual">
             <div className="sharing-illustration">
@@ -198,7 +222,7 @@ const Home = () => {
           </div>
         </div>
         <div className="footer-copyright">
-          © {new Date().getFullYear()} Sharely. All rights reserved.
+          {new Date().getFullYear()} Sharely. All rights reserved.
         </div>
       </footer>
     </div>
