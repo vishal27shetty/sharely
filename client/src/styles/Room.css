@@ -464,6 +464,29 @@
   box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
 }
 
+.accept-file-button,
+.decline-file-button {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: var(--accent-gradient);
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--animation-speed) ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.accept-file-button:hover,
+.decline-file-button:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
 /* Empty states */
 .empty-state {
   display: flex;
@@ -714,10 +737,12 @@
 }
 
 /* Button Ripple Effect */
-.copy-link-button, 
+.copy-link-button,
 .send-file-button,
 .file-upload-button,
-.back-button {
+.back-button,
+.accept-file-button,
+.decline-file-button {
   position: relative;
   overflow: hidden;
 }
@@ -725,7 +750,9 @@
 .copy-link-button::after,
 .send-file-button::after,
 .file-upload-button::after,
-.back-button::after {
+.back-button::after,
+.accept-file-button::after,
+.decline-file-button::after {
   content: '';
   position: absolute;
   top: 50%;
@@ -735,14 +762,16 @@
   background: rgba(255, 255, 255, 0.5);
   opacity: 0;
   border-radius: 100%;
-  transform: scale(1, 1) translate(-50%, -50%);
-  transform-origin: 50% 50%;
+  transform: scale(0, 0);
+  transition: all var(--animation-speed) ease;
 }
 
 .copy-link-button:active::after,
 .send-file-button:active::after,
 .file-upload-button:active::after,
-.back-button:active::after {
+.back-button:active::after,
+.accept-file-button:active::after,
+.decline-file-button:active::after {
   animation: ripple 0.5s ease-out;
 }
 

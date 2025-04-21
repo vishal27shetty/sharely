@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faShareNodes, faArrowLeft, faCopy, faUsers, faFile, faLink, faFileUpload, faCloudDownload } from '@fortawesome/free-solid-svg-icons';
+import { faShareNodes, faArrowLeft, faCopy, faUsers, faFile, faLink, faFileUpload, faCloudDownload, faCheck, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { io } from 'socket.io-client';
 import { v4 as uuidv4 } from 'uuid';
 import '../styles/Room.css';
@@ -65,6 +65,36 @@ const Room = () => {
     };
   }, []);
 
+  // Random nickname generator
+  const adjectives = ['Happy','Sneaky','Brave','Chill','Witty','Curious','Playful','Calm','Jolly','Lively','Swift','Clever','Funky','Mighty','Quiet','Bold','Gentle','Zesty','Bright','Shy'];
+  const animals = [
+    { name: 'Otter',   emoji: '🦦' },
+    { name: 'Fox',     emoji: '🦊' },
+    { name: 'Panda',   emoji: '🐼' },
+    { name: 'Koala',   emoji: '🐨' },
+    { name: 'Penguin', emoji: '🐧' },
+    { name: 'Lion',    emoji: '🦁' },
+    { name: 'Tiger',   emoji: '🐯' },
+    { name: 'Dolphin', emoji: '🐬' },
+    { name: 'Eagle',   emoji: '🦅' },
+    { name: 'Hawk',    emoji: '🦅' },
+    { name: 'Squirrel',emoji: '🐿️' },
+    { name: 'Rabbit',  emoji: '🐰' },
+    { name: 'Bear',    emoji: '🐻' },
+    { name: 'Giraffe', emoji: '🦒' },
+    { name: 'Zebra',   emoji: '🦓' },
+    { name: 'Whale',   emoji: '🐳' },
+    { name: 'Falcon',  emoji: '🦅' },
+    { name: 'Wolf',    emoji: '🐺' },
+    { name: 'Hedgehog',emoji: '🦔' }
+  ];
+  const generateRandomName = () => {
+    const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
+    const animalObj = animals[Math.floor(Math.random() * animals.length)];
+    // Use text name for display and emoji for avatar
+    return { name: `${adj}${animalObj.name}`, emoji: animalObj.emoji };
+  };
+
   const setupSocketEvents = (myPeerId) => {
     const socket = socketRef.current;
     socket.on('connect', () => {
@@ -83,10 +113,12 @@ const Room = () => {
       const newPeers = { ...peers };
       users.forEach(user => {
         if (!newPeers[user.id]) {
+          const { name, emoji } = generateRandomName();
           newPeers[user.id] = {
             id: user.id,
             peerId: user.peerId,
-            name: `User-${user.peerId.substring(0, 4)}`,
+            name,
+            emoji,
             connection: null
           };
         }
@@ -100,10 +132,12 @@ const Room = () => {
       setPeers(prev => {
         const newPeers = { ...prev };
         if (!newPeers[user.id]) {
+          const { name, emoji } = generateRandomName();
           newPeers[user.id] = {
             id: user.id,
             peerId: user.peerId,
-            name: `User-${user.peerId.substring(0, 4)}`,
+            name,
+            emoji,
             connection: null
           };
         }
@@ -156,6 +190,25 @@ const Room = () => {
       }));
       showNotification(`File transfer complete!`, 'success');
     });
+
+    // Handle incoming file transfer: queue for accept/decline
+    socket.on('file-transfer', ({ from, fileData, fileName, fileType }) => {
+      const fileId = uuidv4();
+      setFiles(prev => ({
+        ...prev,
+        [fileId]: {
+          id: fileId,
+          name: fileName,
+          size: fileData.byteLength,
+          type: fileType,
+          status: 'Pending',
+          data: fileData,
+          from,
+          progress: 0
+        }
+      }));
+      showNotification(`Incoming file: ${fileName}`, 'info');
+    });
   };
 
   const showNotification = (message, type = 'info') => {
@@ -188,6 +241,7 @@ const Room = () => {
         name: file.name,
         size: file.size,
         type: file.type,
+        file: file,
         status: 'Ready to send',
         progress: 0
       }
@@ -201,37 +255,68 @@ const Room = () => {
     }
   };
 
-  const sendFile = (fileId) => {
-    // Implementation would depend on your P2P library
-    const fileToSend = files[fileId];
-    if (fileToSend) {
+  const sendFile = async (fileId) => {
+    const fileObj = files[fileId];
+    if (fileObj && fileObj.file) {
       setFiles(prev => ({
         ...prev,
         [fileId]: {
           ...prev[fileId],
           status: 'Sending...',
+          progress: 0
         }
       }));
-      
-      // Mock a file transfer with progress updates
-      let progress = 0;
-      const interval = setInterval(() => {
-        progress += 10;
-        setFiles(prev => ({
-          ...prev,
-          [fileId]: {
-            ...prev[fileId],
-            progress,
-            status: progress < 100 ? 'Sending...' : 'Completed'
-          }
-        }));
-        
-        if (progress >= 100) {
-          clearInterval(interval);
-          showNotification(`File sent successfully!`, 'success');
+      const arrayBuffer = await fileObj.file.arrayBuffer();
+      // Send file to all connected peers
+      Object.values(peers).forEach(peer => {
+        socketRef.current.emit('file-transfer', {
+          to: peer.id,
+          fileData: arrayBuffer,
+          fileName: fileObj.name,
+          fileType: fileObj.type
+        });
+      });
+      setFiles(prev => ({
+        ...prev,
+        [fileId]: {
+          ...prev[fileId],
+          status: 'Sent',
+          progress: 100
         }
-      }, 500);
+      }));
+      showNotification(`File sent: ${fileObj.name}`, 'success');
     }
+  };
+
+  // Accept incoming file
+  const acceptFile = (fileId) => {
+    const fileObj = files[fileId];
+    if (fileObj && fileObj.data) {
+      const blob = new Blob([fileObj.data], { type: fileObj.type });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileObj.name;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      setFiles(prev => ({
+        ...prev,
+        [fileId]: { ...prev[fileId], status: 'Accepted' }
+      }));
+      showNotification(`File accepted: ${fileObj.name}`, 'success');
+    }
+  };
+
+  // Decline incoming file
+  const declineFile = (fileId) => {
+    setFiles(prev => {
+      const newFiles = { ...prev };
+      delete newFiles[fileId];
+      return newFiles;
+    });
+    showNotification('File declined', 'warning');
   };
 
   return (
@@ -294,7 +379,7 @@ const Room = () => {
                     {Object.values(peers).map(peer => (
                       <li key={peer.id} className="peer-item">
                         <div className="peer-avatar">
-                          <span>{peer.name.charAt(0)}</span>
+                          <span>{peer.emoji || peer.name.charAt(0)}</span>
                         </div>
                         <div className="peer-info">
                           <span className="peer-name">{peer.name}</span>
@@ -350,6 +435,16 @@ const Room = () => {
                             <button className="send-file-button" onClick={() => sendFile(file.id)}>
                               <FontAwesomeIcon icon={faCloudDownload} />
                             </button>
+                          )}
+                          {file.status === 'Pending' && (
+                            <>
+                              <button className="accept-file-button" onClick={() => acceptFile(file.id)}>
+                                <FontAwesomeIcon icon={faCheck} />
+                              </button>
+                              <button className="decline-file-button" onClick={() => declineFile(file.id)}>
+                                <FontAwesomeIcon icon={faTimes} />
+                              </button>
+                            </>
                           )}
                           <span className="file-status">{file.status}</span>
                         </div>
