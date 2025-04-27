@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faShareNodes, faArrowLeft, faCopy, faUsers, faFile, faLink, faFileUpload, faCloudDownload, faCheck, faTimes, faFolder } from '@fortawesome/free-solid-svg-icons';
 import { io } from 'socket.io-client';
 import { v4 as uuidv4 } from 'uuid';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
 import '../styles/Room.css';
 
 const Room = () => {
@@ -22,7 +23,7 @@ const Room = () => {
   const [isDropActive, setIsDropActive] = useState(false);
 
   useEffect(() => {
-    socketRef.current = io('http://localhost:3000', {
+    socketRef.current = io(BACKEND_URL, {
       reconnection: true,
       reconnectionAttempts: 5,
       reconnectionDelay: 1000

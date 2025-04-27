@@ -7,13 +7,15 @@ const cors = require('cors');
 const app = express();
 const server = http.createServer(app);
 
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+
 // Enable CORS
-app.use(cors());
+app.use(cors({ origin: FRONTEND_URL, credentials: true }));
 
 // Socket.io with CORS configuration
 const io = socketIo(server, {
   cors: {
-    origin: "*",
+    origin: FRONTEND_URL,
     methods: ["GET", "POST"],
     credentials: true
   },
@@ -21,7 +23,7 @@ const io = socketIo(server, {
 });
 
 // Serve static files from the React app
-app.use(express.static(path.join(__dirname, 'client/dist')));
+app.use(express.static(path.join(__dirname, 'client', 'build')));
 
 // Store active rooms and connections
 const rooms = {};
@@ -99,12 +101,14 @@ io.on('connection', (socket) => {
     });
   });
   
-  // Handle file transfer (direct, no chunking)
-  socket.on('file-transfer', ({ to, fileData, fileName, fileType }) => {
-    console.log(`Transferring file ${fileName} from ${socket.id} to ${to}`);
+  // Handle encrypted file transfer (direct, no chunking)
+  socket.on('file-transfer', ({ to, fileData, iv, key, fileName, fileType }) => {
+    console.log(`Transferring encrypted file ${fileName} from ${socket.id} to ${to}`);
     io.to(to).emit('file-transfer', {
       from: socket.id,
       fileData,
+      iv,
+      key,
       fileName,
       fileType
     });
@@ -133,7 +137,7 @@ app.get('/api/debug/rooms', (req, res) => {
 
 // Catch-all handler for client-side routing
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'client/dist', 'index.html'));
+  res.sendFile(path.join(__dirname, 'client', 'build', 'index.html'));
 });
 
 // Start server
