@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faShareNodes, faArrowLeft, faCopy, faUsers, faFile, faLink, faFileUpload, faCloudDownload, faCheck, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { faShareNodes, faArrowLeft, faCopy, faUsers, faFile, faLink, faFileUpload, faCloudDownload, faCheck, faTimes, faFolder } from '@fortawesome/free-solid-svg-icons';
 import { io } from 'socket.io-client';
 import { v4 as uuidv4 } from 'uuid';
 import '../styles/Room.css';
@@ -11,6 +11,7 @@ const Room = () => {
   const navigate = useNavigate();
   const socketRef = useRef();
   const fileInputRef = useRef(null);
+  const folderInputRef = useRef(null);
   const [peers, setPeers] = useState({});
   const [files, setFiles] = useState({});
   const [notifications, setNotifications] = useState([]);
@@ -50,7 +51,8 @@ const Room = () => {
       e.preventDefault();
       setIsDropActive(false);
       if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-        handleFileSelect(e.dataTransfer.files[0]);
+        Array.from(e.dataTransfer.files).forEach(file => handleFileSelect(file));
+        e.dataTransfer.clearData();
       }
     };
 
@@ -191,19 +193,19 @@ const Room = () => {
       showNotification(`File transfer complete!`, 'success');
     });
 
-    // Handle incoming file transfer: queue for accept/decline
+    // Handle incoming file: queue for accept/decline
     socket.on('file-transfer', ({ from, fileData, fileName, fileType }) => {
       const fileId = uuidv4();
+      const size = fileData.byteLength !== undefined ? fileData.byteLength : fileData.size;
       setFiles(prev => ({
         ...prev,
         [fileId]: {
           id: fileId,
           name: fileName,
-          size: fileData.byteLength,
+          size,
           type: fileType,
-          status: 'Pending',
           data: fileData,
-          from,
+          status: 'Pending',
           progress: 0
         }
       }));
@@ -230,6 +232,10 @@ const Room = () => {
     fileInputRef.current.click();
   };
 
+  const handleFolderInputClick = () => {
+    folderInputRef.current.click();
+  };
+
   const handleFileSelect = (file) => {
     setSelectedFile(file);
     // Add new file to the list
@@ -251,23 +257,20 @@ const Room = () => {
 
   const handleFileUpload = (e) => {
     if (e.target.files && e.target.files.length > 0) {
-      handleFileSelect(e.target.files[0]);
+      Array.from(e.target.files).forEach(file => handleFileSelect(file));
     }
   };
 
+  // Direct file transfer without encryption
   const sendFile = async (fileId) => {
     const fileObj = files[fileId];
     if (fileObj && fileObj.file) {
       setFiles(prev => ({
         ...prev,
-        [fileId]: {
-          ...prev[fileId],
-          status: 'Sending...',
-          progress: 0
-        }
+        [fileId]: { ...prev[fileId], status: 'Sending...', progress: 0 }
       }));
+      // Read as ArrayBuffer and send
       const arrayBuffer = await fileObj.file.arrayBuffer();
-      // Send file to all connected peers
       Object.values(peers).forEach(peer => {
         socketRef.current.emit('file-transfer', {
           to: peer.id,
@@ -278,21 +281,24 @@ const Room = () => {
       });
       setFiles(prev => ({
         ...prev,
-        [fileId]: {
-          ...prev[fileId],
-          status: 'Sent',
-          progress: 100
-        }
+        [fileId]: { ...prev[fileId], status: 'Sent', progress: 100 }
       }));
       showNotification(`File sent: ${fileObj.name}`, 'success');
     }
   };
 
-  // Accept incoming file
+  // Accept incoming file and download
   const acceptFile = (fileId) => {
     const fileObj = files[fileId];
     if (fileObj && fileObj.data) {
-      const blob = new Blob([fileObj.data], { type: fileObj.type });
+      setFiles(prev => ({
+        ...prev,
+        [fileId]: { ...prev[fileId], status: 'Downloading...' }
+      }));
+      showNotification(`Downloading: ${fileObj.name}`, 'info');
+      const blob = fileObj.data instanceof Blob
+        ? fileObj.data
+        : new Blob([fileObj.data], { type: fileObj.type });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -398,12 +404,26 @@ const Room = () => {
                 <h2>File Transfers</h2>
                 <button className="file-upload-button" onClick={handleFileInputClick}>
                   <FontAwesomeIcon icon={faFileUpload} />
-                  <span>Upload</span>
+                  <span>Upload File(s)</span>
                 </button>
-                <input 
-                  type="file" 
-                  ref={fileInputRef} 
-                  style={{ display: 'none' }} 
+                <button className="file-upload-button folder-upload-button" onClick={handleFolderInputClick}>
+                  <FontAwesomeIcon icon={faFolder} />
+                  <span>Upload Folder</span>
+                </button>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  style={{ display: 'none' }}
+                  multiple
+                  onChange={handleFileUpload}
+                />
+                <input
+                  type="file"
+                  ref={folderInputRef}
+                  style={{ display: 'none' }}
+                  webkitdirectory="true"
+                  directory
+                  multiple
                   onChange={handleFileUpload}
                 />
               </div>
